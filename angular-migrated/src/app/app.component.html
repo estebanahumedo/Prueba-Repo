@@ -1,0 +1,839 @@
+<app-create-case
+  *ngIf="view === 'create'"
+  (cancel)="onCreateCanceled()"
+  (save)="onCaseCreated($event)"
+></app-create-case>
+
+<app-case-details
+  *ngIf="view === 'details' && selectedCase"
+  [caseData]="selectedCase"
+  (back)="returnToDashboard()"
+  (updateMilestone)="handleMilestoneUpdated($event)"
+  (addService)="addServiceToCase($event)"
+  (deleteService)="deleteServiceFromCase($event)"
+></app-case-details>
+
+<div
+  *ngIf="view === 'dashboard'"
+  class="min-h-screen bg-[#F9FAFB] py-8 px-4 md:px-10 lg:px-16 animate-in fade-in duration-500"
+>
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col gap-8 mb-8">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 tracking-tight">
+            Mis Casos
+          </h1>
+          <p class="text-gray-500 mt-1">Gestion operativa Clever - IAN.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            (click)="openCreateCase()"
+            class="flex items-center gap-2 px-6 py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
+          >
+            <span class="text-xl">+</span>
+            Crear Caso
+          </button>
+
+          <button
+            (click)="showMigrationToast('Calculadora')"
+            class="flex items-center justify-center w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+            aria-label="Calculadora"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+              <line x1="8" y1="6" x2="16" y2="6"></line>
+              <line x1="16" y1="10" x2="16" y2="10"></line>
+              <line x1="12" y1="10" x2="12" y2="10"></line>
+              <line x1="8" y1="10" x2="8" y2="10"></line>
+              <line x1="16" y1="14" x2="16" y2="14"></line>
+              <line x1="12" y1="14" x2="12" y2="14"></line>
+              <line x1="8" y1="14" x2="8" y2="14"></line>
+              <line x1="16" y1="18" x2="16" y2="18"></line>
+              <line x1="12" y1="18" x2="12" y2="18"></line>
+              <line x1="8" y1="18" x2="8" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full place-items-center"
+      >
+        <div
+          class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between transition-all hover:shadow-md hover:-translate-y-1 w-full min-w-[280px]"
+        >
+          <div>
+            <p
+              class="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-1"
+            >
+              Casos Pendientes
+            </p>
+            <h3 class="text-4xl font-extrabold text-gray-800 tracking-tight">
+              {{ pendingCasesCount }}
+            </h3>
+          </div>
+          <div class="bg-amber-50 p-4 rounded-xl text-amber-500">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <div
+          class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between transition-all hover:shadow-md hover:-translate-y-1 w-full min-w-[280px]"
+        >
+          <div>
+            <p
+              class="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-1"
+            >
+              Casos en Curso
+            </p>
+            <h3 class="text-4xl font-extrabold text-gray-800 tracking-tight">
+              {{ inProgressCasesCount }}
+            </h3>
+          </div>
+          <div class="bg-blue-50 p-4 rounded-xl text-blue-500">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+        </div>
+
+        <div
+          class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between transition-all hover:shadow-md hover:-translate-y-1 w-full min-w-[280px]"
+        >
+          <div>
+            <p
+              class="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-1"
+            >
+              Casos Prestados
+            </p>
+            <h3 class="text-4xl font-extrabold text-gray-800 tracking-tight">
+              {{ servicedCasesCount }}
+            </h3>
+          </div>
+          <div class="bg-emerald-50 p-4 rounded-xl text-emerald-500">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label
+            class="text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >CASO</label
+          >
+          <div class="relative">
+            <span
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+            <input
+              type="text"
+              placeholder="Ej. 1234567"
+              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label
+            class="text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >PLACA/CEDULA</label
+          >
+          <div class="relative">
+            <span
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+            <input
+              type="text"
+              placeholder="Ej. ABC123"
+              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label
+            class="text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >Responsable</label
+          >
+          <select
+            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all appearance-none cursor-pointer"
+          >
+            <option>Todos</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label
+            class="text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >Fecha Solicitud</label
+          >
+          <div class="relative">
+            <span
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </span>
+            <input
+              type="date"
+              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label
+            class="text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >Estado</label
+          >
+          <select
+            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all appearance-none cursor-pointer"
+          >
+            <option>Todos</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col justify-end">
+          <button
+            class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold rounded-xl transition-colors shadow-md shadow-emerald-900/10"
+          >
+            Filtrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+    >
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50/50 border-b border-gray-100">
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap"
+              >
+                ID
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap"
+              >
+                CASO
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap"
+              >
+                PLACA/CEDULA
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap"
+              >
+                Estado
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap"
+              >
+                Fecha
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap"
+              >
+                Hora
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap"
+              >
+                Responsable
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap"
+              >
+                Cola Asignada
+              </th>
+              <th class="px-6 py-4 w-10"></th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-gray-100">
+            <ng-container *ngFor="let c of cases">
+              <tr
+                class="transition-colors"
+                [ngClass]="
+                  expandedId === c.id ? 'bg-gray-50' : 'hover:bg-gray-50/40'
+                "
+              >
+                <td class="px-6 py-5 text-gray-400 text-sm font-medium">
+                  {{ c.systemId }}
+                </td>
+
+                <td class="px-6 py-5">
+                  <span
+                    (click)="openCaseDetails(c)"
+                    class="font-bold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer transition-colors"
+                  >
+                    {{ c.siabNumber }}
+                  </span>
+                </td>
+
+                <td
+                  class="px-6 py-5 text-gray-600 font-bold font-mono tracking-tight"
+                >
+                  {{ c.plate }}
+                </td>
+
+                <td class="px-6 py-5">
+                  <span
+                    class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider"
+                    [ngClass]="getStatusStyle(c.status)"
+                  >
+                    {{ c.status }}
+                  </span>
+                </td>
+
+                <td class="px-6 py-5 text-gray-600 text-sm whitespace-nowrap">
+                  {{ c.requestDate }}
+                </td>
+                <td class="px-6 py-5 text-gray-500 text-sm">
+                  {{ c.requestTime }}
+                </td>
+                <td class="px-6 py-5 text-gray-700 text-sm font-medium">
+                  {{ c.responsable }}
+                </td>
+                <td class="px-6 py-5 text-gray-600 text-sm">
+                  {{ c.assignedQueue }}
+                </td>
+
+                <td class="px-6 py-5">
+                  <button
+                    (click)="toggleExpand(c.id)"
+                    class="p-2 rounded-lg transition-all duration-200 border"
+                    [ngClass]="
+                      expandedId === c.id
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                        : 'bg-white border-gray-200 text-gray-400 hover:text-emerald-600 hover:border-emerald-200'
+                    "
+                  >
+                    <svg
+                      *ngIf="expandedId !== c.id"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <svg
+                      *ngIf="expandedId === c.id"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+
+              <tr *ngIf="expandedId === c.id" class="bg-gray-50/30">
+                <td colspan="9" class="px-8 py-6">
+                  <div
+                    class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-md animate-in slide-in-from-top-2"
+                  >
+                    <div
+                      class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between"
+                    >
+                      <h4
+                        class="text-xs font-black text-gray-500 uppercase tracking-[0.2em]"
+                      >
+                        Servicios Asociados
+                      </h4>
+                      <span class="text-xs text-gray-400 font-bold"
+                        >{{ c.services.length }} servicio(s)</span
+                      >
+                    </div>
+
+                    <div class="space-y-2 p-3">
+                      <div
+                        *ngFor="let service of c.services"
+                        class="grid grid-cols-12 items-center p-3 bg-gray-50/30 rounded-lg border border-gray-100 hover:border-emerald-100 transition-all gap-4"
+                      >
+                        <div class="col-span-2 flex flex-col">
+                          <span
+                            class="font-mono font-bold text-emerald-800 text-xs"
+                            >{{ service.authNumber }}</span
+                          >
+                        </div>
+
+                        <div class="col-span-2 flex flex-col">
+                          <span class="text-xs font-bold text-gray-800">{{
+                            service.serviceType
+                          }}</span>
+                        </div>
+
+                        <div class="col-span-3">
+                          <div
+                            *ngIf="service.providerName; else providerPending"
+                            class="flex items-center gap-2"
+                          >
+                            <div
+                              class="w-5 h-5 rounded bg-emerald-100 flex items-center justify-center text-[9px] text-emerald-700 font-bold shrink-0"
+                            >
+                              {{ service.providerName.charAt(0) }}
+                            </div>
+                            <span
+                              class="text-[11px] font-semibold text-gray-600 truncate"
+                              >{{ service.providerName }}</span
+                            >
+                          </div>
+                          <ng-template #providerPending>
+                            <div
+                              class="inline-flex items-center px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-[9px] font-bold text-gray-400 uppercase tracking-tighter"
+                            >
+                              Pendiente asignar proveedor
+                            </div>
+                          </ng-template>
+                        </div>
+
+                        <div class="col-span-3 flex items-center gap-1.5">
+                          <button
+                            *ngFor="let m of milestones"
+                            [disabled]="!isMilestoneEditable(service, m.key)"
+                            (click)="
+                              openMilestoneModal(
+                                c.id,
+                                service.id,
+                                m.key,
+                                m.label
+                              )
+                            "
+                            class="w-7 h-7 rounded-lg flex items-center justify-center text-[8px] font-black transition-all shadow-sm"
+                            [ngClass]="
+                              getMilestoneColor(
+                                getMilestoneStatus(service, m.key)
+                              ) +
+                              (isMilestoneEditable(service, m.key)
+                                ? ' hover:scale-110 active:scale-95 cursor-pointer ring-2 ring-white'
+                                : ' cursor-default')
+                            "
+                          >
+                            <ng-container
+                              *ngIf="
+                                getMilestoneStatus(service, m.key) !==
+                                  'completed';
+                                else completedMark
+                              "
+                            >
+                              {{ m.label }}
+                            </ng-container>
+                            <ng-template #completedMark>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="4"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              >
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                            </ng-template>
+                          </button>
+                        </div>
+
+                        <div class="col-span-2 flex flex-col items-end gap-1">
+                          <button
+                            (click)="openHistoryModal(c, service)"
+                            class="p-1 hover:bg-emerald-50 rounded-lg text-gray-400 hover:text-emerald-600 transition-all"
+                            title="Ver Historial"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                          </button>
+
+                          <span
+                            class="inline-flex px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                            [ngClass]="
+                              service.metadata?.servicio_programado
+                                ? 'bg-blue-50 text-blue-600 border border-blue-100'
+                                : 'bg-red-50 text-red-600 border border-red-100'
+                            "
+                          >
+                            {{
+                              service.metadata?.servicio_programado
+                                ? "Programado"
+                                : "Emergencia"
+                            }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="editingMilestone"
+  class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+>
+  <div
+    class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-300"
+  >
+    <div
+      class="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between"
+    >
+      <div>
+        <h4 class="text-sm font-black text-gray-900 uppercase tracking-widest">
+          Gestion de Seguimiento
+        </h4>
+        <p
+          class="text-[10px] text-emerald-800 font-bold uppercase tracking-widest mt-0.5"
+        >
+          {{ editingMilestone.label }}
+        </p>
+      </div>
+      <button
+        (click)="closeMilestoneModal()"
+        class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-8 space-y-6">
+      <div class="space-y-3">
+        <label
+          class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1"
+          >Estado de Gestion</label
+        >
+        <div class="grid grid-cols-2 gap-3">
+          <button
+            (click)="milestoneResult = 'managed'"
+            class="py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2"
+            [ngClass]="
+              milestoneResult === 'managed'
+                ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-md shadow-emerald-500/10'
+                : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
+            "
+          >
+            Gestionado
+          </button>
+          <button
+            (click)="milestoneResult = 'novelty'"
+            class="py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2"
+            [ngClass]="
+              milestoneResult === 'novelty'
+                ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-md shadow-amber-500/10'
+                : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
+            "
+          >
+            Con Novedad
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label
+          class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1"
+          >Observacion</label
+        >
+        <textarea
+          [(ngModel)]="milestoneObservation"
+          class="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl text-xs font-bold text-gray-700 outline-none transition-all placeholder:font-normal min-h-[100px] resize-none"
+          placeholder="Describa el resultado del seguimiento..."
+        ></textarea>
+      </div>
+
+      <button
+        (click)="saveMilestone()"
+        class="w-full py-4 bg-emerald-800 text-white text-xs font-black rounded-2xl hover:bg-emerald-900 shadow-lg shadow-emerald-900/20 active:scale-95 transition-all uppercase tracking-[0.2em]"
+      >
+        Guardar Gestion
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="historyService"
+  class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300"
+>
+  <div
+    class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300"
+  >
+    <div
+      class="px-10 py-8 border-b border-gray-100 flex items-center justify-between bg-white"
+    >
+      <div>
+        <h3 class="text-xl font-black text-gray-900 tracking-tight uppercase">
+          HISTORIAL
+        </h3>
+        <p
+          class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1"
+        >
+          {{ historyService.label }}
+        </p>
+      </div>
+      <button
+        (click)="closeHistoryModal()"
+        class="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-8 max-h-[400px] overflow-y-auto space-y-6">
+      <div
+        *ngIf="historyService.history.length > 0; else noHistory"
+        class="space-y-6"
+      >
+        <div
+          *ngFor="let entry of historyService.history"
+          class="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-[2px] before:bg-gray-100 last:before:bg-transparent"
+        >
+          <div
+            class="absolute left-[-4px] top-1.5 w-2 h-2 rounded-full bg-emerald-500 border-2 border-white"
+          ></div>
+          <div class="flex justify-between items-start mb-1">
+            <span
+              class="text-[10px] font-black text-gray-400 uppercase tracking-tighter"
+              >{{ entry.date }}</span
+            >
+            <span
+              class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest"
+              [ngClass]="
+                entry.type === 'observation'
+                  ? 'bg-blue-50 text-blue-600'
+                  : entry.type === 'change'
+                    ? 'bg-amber-50 text-amber-600'
+                    : 'bg-gray-50 text-gray-500'
+              "
+            >
+              {{
+                entry.type === "observation"
+                  ? "Observacion"
+                  : entry.type === "change"
+                    ? "Cambio"
+                    : "Sistema"
+              }}
+            </span>
+          </div>
+          <p class="text-xs font-bold text-gray-700 leading-relaxed">
+            {{ entry.description }}
+          </p>
+          <p
+            class="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-widest"
+          >
+            Por: {{ entry.user }}
+          </p>
+        </div>
+      </div>
+      <ng-template #noHistory>
+        <div class="flex flex-col items-center justify-center py-10 opacity-30">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="mb-3"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            ></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <p class="text-[10px] font-black uppercase tracking-[0.2em]">
+            Sin registros historicos
+          </p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="px-10 py-8 bg-gray-50/50 border-t border-gray-100">
+      <label
+        class="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4"
+        >AGREGAR OBSERVACION</label
+      >
+      <textarea
+        [(ngModel)]="newObservation"
+        class="w-full p-6 text-sm font-bold text-gray-700 bg-white border-2 border-transparent focus:border-emerald-400 rounded-3xl min-h-[100px] outline-none transition-all placeholder:text-gray-300 shadow-inner"
+        placeholder="Escriba aqui la observacion..."
+      ></textarea>
+      <button
+        (click)="addObservationToHistory()"
+        [disabled]="!newObservation.trim()"
+        class="w-full mt-6 py-5 bg-emerald-800 text-white font-black text-xs uppercase tracking-[0.25em] rounded-3xl shadow-xl shadow-emerald-900/20 hover:bg-emerald-900 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all"
+      >
+        GUARDAR OBSERVACION
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="toastMessage"
+  class="fixed right-6 bottom-6 bg-gray-900 text-white text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl z-[110]"
+>
+  {{ toastMessage }}
+</div>

@@ -1,0 +1,453 @@
+<div class="min-h-screen bg-[#F9FAFB] pb-20 animate-in fade-in duration-500">
+  <div
+    class="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-30"
+  >
+    <div
+      class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4"
+    >
+      <div class="flex items-center gap-4">
+        <button
+          (click)="cancel.emit()"
+          class="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-emerald-50 text-gray-400 hover:text-emerald-700 rounded-xl transition-all"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <div
+            class="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]"
+          >
+            CONTROL OPERATIVO /
+            <span class="text-emerald-700">REGISTRO DE CASO</span>
+          </div>
+          <h1 class="text-4xl font-black text-gray-900 tracking-tight">
+            Apertura de Asistencia
+          </h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button
+          (click)="cancel.emit()"
+          class="px-5 py-3 text-gray-400 hover:text-gray-600 text-xs font-black uppercase tracking-[0.2em]"
+        >
+          Descartar
+        </button>
+        <button
+          (click)="registerCase()"
+          [disabled]="!selectedResult || isCustomerBlacklisted"
+          class="px-5 py-3 bg-emerald-800 hover:bg-emerald-900 disabled:bg-gray-300 text-white font-black rounded-xl transition-all text-xs uppercase tracking-[0.2em] shadow-lg"
+        >
+          Registrar Caso
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <!-- SEARCH SECTION -->
+    <div class="bg-white rounded-2xl shadow-lg shadow-emerald-900/5 p-8 mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <div
+          class="w-10 h-10 flex items-center justify-center bg-emerald-100 text-emerald-700 rounded-xl font-bold text-lg"
+        >
+          1
+        </div>
+        <h2 class="text-lg font-bold text-gray-900">
+          BUSCADOR DE CLIENTE O VEHÍCULO
+        </h2>
+      </div>
+
+      <div class="flex gap-3">
+        <div class="flex-1 relative">
+          <input
+            [(ngModel)]="searchTerm"
+            (keydown.enter)="consult()"
+            type="text"
+            placeholder="Ingrese Cédula, NIT o Placa..."
+            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+          />
+          <button
+            (click)="consult()"
+            class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-emerald-700 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </button>
+        </div>
+        <button
+          (click)="consult()"
+          class="px-6 py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl transition-all shadow-lg"
+        >
+          Consultar
+        </button>
+      </div>
+
+      <div
+        *ngIf="searchResults.length"
+        class="mt-4 bg-white border border-emerald-100 rounded-xl overflow-hidden max-h-64 overflow-y-auto"
+      >
+        <div
+          *ngFor="let result of searchResults"
+          (click)="selectResult(result)"
+          class="p-4 border-b border-gray-100 last:border-0 hover:bg-emerald-50 cursor-pointer transition-colors"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-bold text-gray-900">
+                {{ result.customer.name }}
+              </div>
+              <div class="text-xs text-gray-500 mt-1">
+                CC: {{ result.customer.cc }} | Placa:
+                {{ result.policy.vehiclePlate || "N/A" }} | Póliza:
+                {{ result.policy.number }}
+              </div>
+            </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-emerald-600"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SELECTED RESULT SECTION -->
+    <div
+      *ngIf="selectedResult"
+      class="bg-gradient-to-r from-emerald-50 to-emerald-50/50 rounded-2xl shadow-lg shadow-emerald-900/5 p-8 mb-8"
+    >
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-emerald-100">
+          <div
+            class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider"
+          >
+            Nº DE CASO
+          </div>
+          <div class="text-2xl font-black text-emerald-900 mt-2">
+            {{ generatedCaseNumber }}
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-emerald-100">
+          <div
+            class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider"
+          >
+            SEGMENTO CLV
+          </div>
+          <div class="text-sm font-bold text-gray-900 mt-2">
+            {{ selectedResult.customer.clv }}
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-emerald-100">
+          <div
+            class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider"
+          >
+            ESTADO PÓLIZA
+          </div>
+          <div class="text-sm font-bold text-gray-900 mt-2">
+            {{ selectedResult.policy.status }}
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-emerald-100">
+          <div
+            class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider"
+          >
+            VALIDACIÓN
+          </div>
+          <div
+            class="text-sm font-bold"
+            [class]="isCustomerBlacklisted ? 'text-red-600' : 'text-green-600'"
+          >
+            {{ isCustomerBlacklisted ? "BLOQUEADO" : "OK" }}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <div
+            class="text-[10px] font-bold text-gray-500 uppercase tracking-wider"
+          >
+            CLIENTE
+          </div>
+          <div class="text-sm font-bold text-gray-900 mt-2">
+            {{ selectedResult.customer.name }}
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <div
+            class="text-[10px] font-bold text-gray-500 uppercase tracking-wider"
+          >
+            CÉDULA
+          </div>
+          <div class="text-sm font-bold text-gray-900 mt-2">
+            {{ selectedResult.customer.cc }}
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <div
+            class="text-[10px] font-bold text-gray-500 uppercase tracking-wider"
+          >
+            PLACA VEHÍCULO
+          </div>
+          <div class="text-sm font-bold text-gray-900 mt-2">
+            {{ selectedResult.policy.vehiclePlate || "N/A" }}
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <div
+            class="text-[10px] font-bold text-gray-500 uppercase tracking-wider"
+          >
+            PÓLIZA
+          </div>
+          <div class="text-sm font-bold text-gray-900 mt-2">
+            {{ selectedResult.policy.number }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WARNING IF BLACKLISTED -->
+    <div
+      *ngIf="isCustomerBlacklisted"
+      class="bg-red-50 border-l-4 border-red-600 p-4 rounded-lg mb-8"
+    >
+      <div class="flex items-start gap-3">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="text-red-600 mt-0.5"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div>
+          <div class="font-bold text-red-900">Cliente en lista negra</div>
+          <div class="text-sm text-red-700 mt-1">
+            Este cliente tiene restricciones en el sistema. No puede registrar
+            casos en este momento.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICES SECTION -->
+    <div
+      *ngIf="selectedResult && !isCustomerBlacklisted"
+      class="bg-white rounded-2xl shadow-lg shadow-emerald-900/5 p-8 mb-8"
+    >
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 flex items-center justify-center bg-emerald-100 text-emerald-700 rounded-xl font-bold text-lg"
+          >
+            2
+          </div>
+          <h2 class="text-lg font-bold text-gray-900">SERVICIOS A PRESTAR</h2>
+        </div>
+        <button
+          (click)="addService()"
+          class="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-lg text-sm transition-colors flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Añadir Servicio
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div
+          *ngFor="
+            let service of serviceForms;
+            let i = index;
+            trackBy: trackByServiceId
+          "
+          class="border border-gray-200 rounded-xl p-6 bg-gray-50/50 hover:bg-white transition-colors"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+              <label
+                class="text-[10px] font-bold text-gray-600 uppercase tracking-wider"
+                >Nº AUTORIZACIÓN</label
+              >
+              <input
+                [(ngModel)]="service.authNumber"
+                type="text"
+                placeholder="Autorización #"
+                class="mt-2 w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label
+                class="text-[10px] font-bold text-gray-600 uppercase tracking-wider"
+                >TIPO DE SERVICIO</label
+              >
+              <select
+                [(ngModel)]="service.serviceType"
+                class="mt-2 w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              >
+                <option *ngFor="let svc of availableServices" [value]="svc">
+                  {{ svc }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label
+                class="text-[10px] font-bold text-gray-600 uppercase tracking-wider"
+                >PROVEEDOR (OPCIONAL)</label
+              >
+              <select
+                [(ngModel)]="service.metadata['proveedor']"
+                class="mt-2 w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              >
+                <option value="">- Seleccionar -</option>
+                <option
+                  *ngFor="let provider of providers"
+                  [value]="provider.name"
+                >
+                  {{ provider.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="flex gap-2">
+              <button
+                *ngIf="serviceForms.length > 1"
+                (click)="removeService(service.id)"
+                class="flex-1 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-lg text-sm transition-colors"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+
+          <!-- Dynamic form fields based on service type -->
+          <div
+            *ngIf="serviceFields(service.serviceType).length > 0"
+            class="mt-4 pt-4 border-t border-gray-200"
+          >
+            <div
+              class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-3"
+            >
+              CAMPOS REQUERIDOS PARA {{ service.serviceType | uppercase }}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div
+                *ngFor="let field of serviceFields(service.serviceType)"
+                class="col-span-1"
+              >
+                <label
+                  class="text-[9px] font-bold text-gray-600 uppercase tracking-wider"
+                  >{{ field.label }}</label
+                >
+                <input
+                  *ngIf="
+                    field.type === 'text' ||
+                    field.type === 'email' ||
+                    field.type === 'tel'
+                  "
+                  [type]="field.type"
+                  [placeholder]="field.label"
+                  [value]="service.metadata[field.name] || ''"
+                  (input)="
+                    updateMetadata(
+                      service.id,
+                      field.name,
+                      $any($event.target).value
+                    )
+                  "
+                  class="mt-1 w-full px-2 py-1.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+                <textarea
+                  *ngIf="field.type === 'textarea'"
+                  [placeholder]="field.label"
+                  [value]="service.metadata[field.name] || ''"
+                  (input)="
+                    updateMetadata(
+                      service.id,
+                      field.name,
+                      $any($event.target).value
+                    )
+                  "
+                  rows="2"
+                  class="mt-1 w-full px-2 py-1.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                ></textarea>
+                <select
+                  *ngIf="field.type === 'select' && field.options"
+                  [value]="service.metadata[field.name] || ''"
+                  (change)="
+                    updateMetadata(
+                      service.id,
+                      field.name,
+                      $any($event.target).value
+                    )
+                  "
+                  class="mt-1 w-full px-2 py-1.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                >
+                  <option value="">- Seleccionar -</option>
+                  <option *ngFor="let opt of field.options" [value]="opt">
+                    {{ opt }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
