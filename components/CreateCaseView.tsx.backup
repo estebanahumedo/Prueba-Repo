@@ -1,0 +1,1667 @@
+
+import React, { useState } from 'react';
+import { Icons } from '../constants';
+import { ServiceType, Customer, Policy } from '../types';
+
+// Lista negra de asegurados de alto riesgo
+const BLACKLIST_CUSTOMERS = [
+  {
+    cc: '1020304050', // Juan Pérez - ya existe en MOCK_CUSTOMERS
+    reason: 'Historial de reclamaciones frecuentes',
+    incidents: 5,
+    lastIncident: '2025-12-15',
+    riskLevel: 'Alto'
+  }
+];
+
+const MOCK_CUSTOMERS: Customer[] = [
+  {
+    cc: '1020304050',
+    name: 'Juan Pérez',
+    phone: '3001234567',
+    email: 'juan.perez@email.com',
+    address: 'Calle 10 # 43 - 50',
+    city: 'Medellín',
+    clv: 'Oro',
+    policies: [
+      { 
+        number: 'POL-77229-X', 
+        validity: '31/12/2026', 
+        type: 'Todo Riesgo Premium', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'AUTOS',
+        renovationNumber: 2,
+        coverageTypeAuto: 'Familiar',
+        productCode: '101',
+        productName: 'Seguro Todo Riesgo Premium',
+        branchName: '15',
+        sequenceNumber: '001',
+        height: '2',
+        startDate: '01/01/2026',
+        endDate: '31/12/2026',
+        insuredValue: '$85.000.000',
+        agentKey: 'AG-12345',
+        enabledServices: [
+          'Conductor elegido', 'Conductor Familiar', 'Trasporte para viajes', 
+          'Trasporte de producto', 'Transporte ocupantes al destino/domicilio', 'translado documentos y mercancía',
+          'Abogado: Asistencia presencial', 'Abogado: Asistencia telefónica', 'Cerrajería autos', 
+          'Carro taller por barada', 'Carro taller instalación de batería', 'Móvil presencial (CESVI)',
+          'Deposito/custodia', 'Grúa salida custodia', 'Grua accidente', 'Gra accedente pesados', 
+          'Grua varada', 'Grua varada pesados', 'moto grua', 'Rescate'
+        ],
+        serviceUsage: {
+          'Conductor elegido': 2,
+          'Conductor Familiar': 1,
+          'translado documentos y mercancía': 0
+        },
+        vehiclePlate: 'GHT459',
+        vehicleBrand: 'Toyota',
+        vehicleModel: '2022',
+        vehicleColor: 'Gris Metalizado',
+        vehicleLine: 'Corolla XEI',
+        vehiclePassengers: 5,
+        vehicleVin: '9BRBD3HE7N0123456',
+        vehicleFasecolda: '01017045',
+        vehicleClass: 'Automovil',
+        vehicleService: 'Particular',
+        vehicleUsage: 'Familiar',
+        vehicleType: 'Sedan',
+        vehicleArmor: 'No'
+      },
+      { 
+        number: 'POL-22334-E', 
+        validity: '10/10/2026', 
+        type: 'Todo Riesgo Plus', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'AUTOS',
+        renovationNumber: 1,
+        coverageTypeAuto: 'Estándar',
+        productCode: '102',
+        productName: 'Seguro Todo Riesgo Plus',
+        branchName: '15',
+        sequenceNumber: '002',
+        height: '1',
+        startDate: '10/10/2025',
+        endDate: '10/10/2026',
+        insuredValue: '$120.000.000',
+        agentKey: 'AG-12346',
+        enabledServices: [
+          'Conductor elegido', 'Conductor Familiar', 'Trasporte para viajes', 
+          'Trasporte de producto', 'Transporte ocupantes al destino/domicilio', 'translado documentos y mercancía',
+          'Abogado: Asistencia presencial', 'Abogado: Asistencia telefónica', 'Cerrajería autos', 
+          'Carro taller por barada', 'Carro taller instalación de batería', 'Móvil presencial (CESVI)',
+          'Deposito/custodia', 'Grúa salida custodia', 'Grua accidente', 'Gra accedente pesados', 
+          'Grua varada', 'Grua varada pesados', 'moto grua', 'Rescate'
+        ],
+        serviceUsage: {
+          'Conductor Familiar': 0,
+          'translado documentos y mercancía': 1
+        },
+        vehiclePlate: 'ABC456',
+        vehicleBrand: 'Ford',
+        vehicleModel: '2024',
+        vehicleColor: 'Negro',
+        vehicleLine: 'Explorer Limited',
+        vehiclePassengers: 7,
+        vehicleVin: '1FM5K8GT8PGA12345',
+        vehicleFasecolda: '02034078',
+        vehicleClass: 'Camioneta',
+        vehicleService: 'Particular',
+        vehicleUsage: 'Familiar',
+        vehicleType: 'SUV',
+        vehicleArmor: 'No'
+      }
+    ]
+  },
+  {
+    cc: '80901020',
+    name: 'Carlos Rodríguez',
+    phone: '3204455667',
+    email: 'c.rodriguez@email.com',
+    address: 'Carrera 15 # 72 - 10',
+    city: 'Cali',
+    clv: 'Diamante',
+    policies: [
+      { 
+        number: 'POL-99887-C', 
+        validity: '20/12/2026', 
+        type: 'Todo Riesgo Estándar', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'AUTOS',
+        renovationNumber: 4,
+        coverageTypeAuto: 'Familiar',
+        productCode: '103',
+        productName: 'Seguro Todo Riesgo Estándar',
+        branchName: '15',
+        sequenceNumber: '003',
+        height: '4',
+        startDate: '20/12/2025',
+        endDate: '20/12/2026',
+        insuredValue: '$45.000.000',
+        agentKey: 'AG-12347',
+        enabledServices: [
+          'Conductor elegido', 'Conductor Familiar', 'Trasporte para viajes', 
+          'Trasporte de producto', 'Transporte ocupantes al destino/domicilio', 'translado documentos y mercancía',
+          'Abogado: Asistencia presencial', 'Abogado: Asistencia telefónica', 'Cerrajería autos', 
+          'Carro taller por barada', 'Carro taller instalación de batería', 'Móvil presencial (CESVI)',
+          'Deposito/custodia', 'Grúa salida custodia', 'Grua accidente', 'Gra accedente pesados', 
+          'Grua varada', 'Grua varada pesados', 'moto grua', 'Rescate'
+        ],
+        serviceUsage: {
+          'Conductor elegido': 1
+        },
+        vehiclePlate: 'XYZ123',
+        vehicleBrand: 'Chevrolet',
+        vehicleModel: '2021',
+        vehicleColor: 'Blanco',
+        vehicleLine: 'Onix LTZ',
+        vehiclePassengers: 5,
+        vehicleVin: '8AGSR69L0MR123789',
+        vehicleFasecolda: '03012056',
+        vehicleClass: 'Automovil',
+        vehicleService: 'Particular',
+        vehicleUsage: 'Familiar',
+        vehicleType: 'Hatchback',
+        vehicleArmor: 'No'
+      }
+    ]
+  },
+  {
+    cc: '1122334455',
+    name: 'María García',
+    phone: '3109876543',
+    email: 'm.garcia@email.com',
+    address: 'Calle 45 # 23-10, Apto 501',
+    city: 'Bogotá',
+    clv: 'Platino',
+    policies: [
+      // Pólizas de Hogar
+      { 
+        number: 'HOG-1234567890', 
+        validity: '15/12/2026', 
+        type: 'Hogar Protección Total', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'HOGAR',
+        renovationNumber: 3,
+        propertyAddress: 'Calle 45 # 23-10, Apto 501',
+        propertyType: 'Apartamento',
+        coverageType: 'Edificio y contenidos',
+        enabledServices: [
+          'Cerrajería autos', 'Abogado: Asistencia telefónica'
+        ]
+      },
+      { 
+        number: 'HOG-9876543210', 
+        validity: '28/02/2027', 
+        type: 'Hogar Digital', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'HOGAR',
+        renovationNumber: 1,
+        propertyAddress: 'Carrera 7 # 100-20, Casa',
+        propertyType: 'Casa',
+        coverageType: 'Solo contenidos',
+        enabledServices: [
+          'Cerrajería autos', 'Abogado: Asistencia telefónica'
+        ]
+      },
+      { 
+        number: 'HOG-5555666677', 
+        validity: '10/01/2025', 
+        type: 'Hogar El Libertador', 
+        status: 'Vencida', 
+        assistanceType: 'Básica',
+        policyType: 'HOGAR',
+        renovationNumber: 5,
+        propertyAddress: 'Avenida 68 # 45-30',
+        propertyType: 'Casa',
+        coverageType: 'Edificio sin contenidos',
+        enabledServices: [
+          'Cerrajería autos'
+        ]
+      },
+      // Póliza de Auto
+      { 
+        number: 'POL-11002-B', 
+        validity: '15/08/2026', 
+        type: 'Responsabilidad Civil', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'AUTOS',
+        renovationNumber: 4,
+        coverageTypeAuto: 'Estándar',
+        productCode: '104',
+        productName: 'Seguro Responsabilidad Civil',
+        branchName: '15',
+        sequenceNumber: '004',
+        height: '4',
+        startDate: '15/08/2025',
+        endDate: '15/08/2026',
+        insuredValue: '$95.000.000',
+        agentKey: 'AG-12348',
+        enabledServices: [
+          'Conductor elegido', 'Conductor Familiar', 'Trasporte para viajes', 
+          'Trasporte de producto', 'Transporte ocupantes al destino/domicilio', 'translado documentos y mercancía',
+          'Abogado: Asistencia presencial', 'Abogado: Asistencia telefónica', 'Cerrajería autos', 
+          'Carro taller por barada', 'Carro taller instalación de batería', 'Móvil presencial (CESVI)',
+          'Deposito/custodia', 'Grúa salida custodia', 'Grua accidente', 'Gra accedente pesados', 
+          'Grua varada', 'Grua varada pesados', 'moto grua', 'Rescate'
+        ],
+        vehiclePlate: 'JKL102',
+        vehicleBrand: 'Mazda',
+        vehicleModel: '2023',
+        vehicleColor: 'Rojo Cristal',
+        vehicleLine: 'CX-5 Touring',
+        vehiclePassengers: 5,
+        vehicleVin: 'JM3KFBDM5N0123456',
+        vehicleFasecolda: '04025067',
+        vehicleClass: 'Camioneta',
+        vehicleService: 'Particular',
+        vehicleUsage: 'Familiar',
+        vehicleType: 'SUV',
+        vehicleArmor: 'No'
+      }
+    ]
+  },
+  {
+    cc: '9001234567',
+    name: 'Pepitos Asociados S.A.S.',
+    phone: '6017654321',
+    email: 'contacto@pepitosasociados.com',
+    address: 'Carrera 10 # 97-30, Oficina 501',
+    city: 'Bogotá',
+    clv: 'Diamante',
+    policies: [
+      // Sede Principal
+      { 
+        number: 'HOG-EMP-001', 
+        validity: '30/06/2027', 
+        type: 'Hogar Empresarial Plus', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'HOGAR',
+        renovationNumber: 7,
+        propertyAddress: 'Carrera 10 # 97-30, Oficina 501',
+        propertyType: 'Oficina',
+        coverageType: 'Edificio y contenidos',
+        enabledServices: [
+          'Cerrajería autos', 'Abogado: Asistencia telefónica'
+        ]
+      },
+      // Bodega Norte
+      { 
+        number: 'HOG-EMP-002', 
+        validity: '15/09/2026', 
+        type: 'Hogar Comercial', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'HOGAR',
+        renovationNumber: 4,
+        propertyAddress: 'Autopista Norte Km 5, Bodega 12',
+        propertyType: 'Local Comercial',
+        coverageType: 'Edificio y contenidos',
+        enabledServices: [
+          'Cerrajería autos', 'Abogado: Asistencia telefónica'
+        ]
+      },
+      // Local Comercial Centro
+      { 
+        number: 'HOG-EMP-003', 
+        validity: '20/11/2026', 
+        type: 'Hogar Protección Comercial', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'HOGAR',
+        renovationNumber: 2,
+        propertyAddress: 'Calle 19 # 5-14, Local 102',
+        propertyType: 'Local Comercial',
+        coverageType: 'Solo contenidos',
+        enabledServices: [
+          'Cerrajería autos', 'Abogado: Asistencia telefónica'
+        ]
+      },
+      // Oficina Medellín
+      { 
+        number: 'HOG-EMP-004', 
+        validity: '10/03/2027', 
+        type: 'Hogar Empresarial', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'HOGAR',
+        renovationNumber: 6,
+        propertyAddress: 'Carrera 43A # 1-50, Piso 8',
+        propertyType: 'Oficina',
+        coverageType: 'Edificio y contenidos',
+        enabledServices: [
+          'Cerrajería autos', 'Abogado: Asistencia telefónica'
+        ]
+      },
+      // Almacén Cali
+      { 
+        number: 'HOG-EMP-005', 
+        validity: '05/05/2026', 
+        type: 'Hogar Comercial Premium', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'HOGAR',
+        renovationNumber: 3,
+        propertyAddress: 'Avenida 6N # 28-10, Centro Comercial Unicentro',
+        propertyType: 'Local Comercial',
+        coverageType: 'Edificio sin contenidos',
+        enabledServices: [
+          'Cerrajería autos'
+        ]
+      }
+    ]
+  },
+  {
+    cc: '1098765432',
+    name: 'Ana Sofía Martínez',
+    phone: '3156789012',
+    email: 'ana.martinez@email.com',
+    address: 'Calle 85 # 15-30',
+    city: 'Bogotá',
+    clv: 'Oro',
+    policies: [
+      { 
+        number: 'POL-55667-T', 
+        validity: '25/06/2027', 
+        type: 'Todo Riesgo Familiar', 
+        status: 'Vigente', 
+        assistanceType: 'Full',
+        policyType: 'AUTOS',
+        renovationNumber: 3,
+        coverageTypeAuto: 'Familiar',
+        productCode: '105',
+        productName: 'Seguro Todo Riesgo Familiar',
+        branchName: '15',
+        sequenceNumber: '005',
+        height: '3',
+        startDate: '25/06/2026',
+        endDate: '25/06/2027',
+        insuredValue: '$75.000.000',
+        agentKey: 'AG-12349',
+        // Tomador diferente al Asegurado
+        policyHolderDocumentType: 'Cédula de Ciudadanía',
+        policyHolderDocument: '1023456789',
+        policyHolderName: 'Roberto Martínez Gómez',
+        enabledServices: [
+          'Conductor elegido', 'Conductor Familiar', 'Trasporte para viajes', 
+          'Trasporte de producto', 'Transporte ocupantes al destino/domicilio', 'translado documentos y mercancía',
+          'Abogado: Asistencia presencial', 'Abogado: Asistencia telefónica', 'Cerrajería autos', 
+          'Carro taller por barada', 'Carro taller instalación de batería', 'Móvil presencial (CESVI)',
+          'Deposito/custodia', 'Grúa salida custodia', 'Grua accidente', 'Gra accedente pesados', 
+          'Grua varada', 'Grua varada pesados', 'moto grua', 'Rescate'
+        ],
+        serviceUsage: {
+          'Conductor elegido': 1,
+          'Conductor Familiar': 0
+        },
+        vehiclePlate: 'DEF789',
+        vehicleBrand: 'Renault',
+        vehicleModel: '2023',
+        vehicleColor: 'Azul Océano',
+        vehicleLine: 'Duster Intens',
+        vehiclePassengers: 5,
+        vehicleVin: '8A1AN4DF5PE123456',
+        vehicleFasecolda: '05018034',
+        vehicleClass: 'Camioneta',
+        vehicleService: 'Particular',
+        vehicleUsage: 'Familiar',
+        vehicleType: 'SUV',
+        vehicleArmor: 'No'
+      }
+    ]
+  }
+];
+
+interface CreateCaseViewProps {
+  onCancel: () => void;
+  onSave: (data: any) => void;
+}
+
+interface ServiceFormState {
+  id: number;
+  authNumber: string;
+  serviceType: ServiceType;
+  metadata: any;
+}
+
+const CreateCaseView: React.FC<CreateCaseViewProps> = ({ onCancel, onSave }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<{customer: Customer, policy: Policy}[]>([]);
+  const [selectedResult, setSelectedResult] = useState<{customer: Customer, policy: Policy} | null>(null);
+  const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | ''>('');
+  
+  const [riskAccepted, setRiskAccepted] = useState<{
+    accepted: boolean;
+    customer: any;
+    timestamp: string;
+  } | null>(null);
+  
+  // Generar número de caso precargado (6 dígitos empezando en 4)
+  const [generatedCaseNumber] = useState(() => {
+    const random = Math.floor(Math.random() * 90000) + 10000;
+    return `4${random}`;
+  });
+
+  const [isCaseAdded, setIsCaseAdded] = useState(false);
+
+  const [tomadorInfo, setTomadorInfo] = useState({
+    documentType: '',
+    cc: '',
+    name: '',
+    phone: '',
+    email: '',
+  });
+
+  const [aseguradoInfo, setAseguradoInfo] = useState({
+    documentType: '',
+    cc: '',
+    name: '',
+    personType: '',
+    phone: '',
+    landline: '',
+    email: '',
+  });
+
+  const [contactoInfo, setContactoInfo] = useState({
+    cc: '',
+    name: '',
+    phone: '',
+    email: '',
+  });
+
+  const [contactType, setContactType] = useState<'other' | 'tomador' | 'asegurado'>('other');
+
+  const [vehicleInfo, setVehicleInfo] = useState({
+    plate: '',
+    brand: '',
+    model: '',
+    color: '',
+    line: '',
+    passengers: '',
+    vin: '',
+    fasecolda: '',
+    vehicleClass: '',
+    service: '',
+    usage: '',
+    vehicleType: '',
+    armorType: '',
+    assistanceType: '',
+    clv: ''
+  });
+
+  const [policyDetails, setPolicyDetails] = useState({
+    productCode: '',
+    productName: '',
+    branchName: '',
+    policyNumber: '',
+    sequenceNumber: '',
+    height: '',
+    startDate: '',
+    endDate: '',
+    insuredValue: '',
+    status: '',
+    agentKey: ''
+  });
+
+  const [activePolicy, setActivePolicy] = useState<Policy | null>(null);
+
+  const [services, setServices] = useState<ServiceFormState[]>([
+    { 
+      id: Date.now(), 
+      authNumber: '', 
+      serviceType: 'Conductor elegido',
+      metadata: {} 
+    }
+  ]);
+
+  const addService = () => {
+    setServices([...services, { 
+      id: Date.now(), 
+      authNumber: '', 
+      serviceType: 'Conductor elegido',
+      metadata: {
+        confirmacion: { status: 'none' },
+        seguimiento50: { status: 'none' },
+        seguimiento75: { status: 'none' },
+        seguimiento100: { status: 'none' },
+        seguimiento200: { status: 'none' },
+        reporte: { status: 'none' }
+      } 
+    }]);
+  };
+
+  const removeService = (id: number) => {
+    if (services.length > 1) {
+      setServices(services.filter(s => s.id !== id));
+    }
+  };
+
+  const handleServiceChange = (id: number, field: string, value: any) => {
+    setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
+  };
+
+  const handleMetadataChange = (serviceId: number, field: string, value: any) => {
+    setServices(services.map(s => 
+      s.id === serviceId ? { ...s, metadata: { ...s.metadata, [field]: value } } : s
+    ));
+  };
+
+  // Agrupación de servicios según requerimientos
+  const isTransportGroup = (type: ServiceType) => 
+    ['Conductor elegido', 'Conductor Familiar', 'Trasporte para viajes', 'translado documentos y mercancía'].includes(type);
+
+  const isLegalTechGroup = (type: ServiceType) => 
+    ['Abogado: Asistencia telefónica', 'Cerrajería autos'].includes(type);
+
+  const isTowingGroup = (type: ServiceType) =>
+    ['Grúa salida custodia', 'Grua accidente', 'Gra accedente pesados', 'Grua varada', 'Grua varada pesados'].includes(type);
+
+  const handleSearch = () => {
+    if (!searchTerm) return;
+    
+    const results: {customer: Customer, policy: Policy}[] = [];
+    
+    MOCK_CUSTOMERS.forEach(customer => {
+      // Search by CC or NIT
+      if (customer.cc === searchTerm) {
+        customer.policies.forEach(policy => {
+          // Incluir todas las pólizas (Hogar y Autos)
+          results.push({ customer, policy });
+        });
+      }
+      
+      // Search by Plate (solo para Autos)
+      customer.policies.forEach(policy => {
+        if (policy.vehiclePlate?.toLowerCase() === searchTerm.toLowerCase()) {
+          results.push({ customer, policy });
+        }
+      });
+    });
+
+    // Verificar si el cliente está en la lista negra
+    const blacklistEntry = BLACKLIST_CUSTOMERS.find(entry => 
+      entry.cc === searchTerm || 
+      results.some(result => result.customer.cc === entry.cc)
+    );
+
+    // Si está en lista negra, guardar la información para mostrar el banner
+    if (blacklistEntry && results.length > 0) {
+      setRiskAccepted({
+        accepted: true,
+        customer: blacklistEntry,
+        timestamp: new Date().toLocaleString('es-CO', { 
+          dateStyle: 'short', 
+          timeStyle: 'short' 
+        })
+      });
+    }
+
+    // Mostrar resultados directamente (sin modal de alerta)
+    setSearchResults(results);
+    
+    if (results.length === 0) {
+      setSelectedResult(null);
+    }
+  };
+
+  const selectResult = (result: {customer: Customer, policy: Policy}) => {
+    setSelectedResult(result);
+    setSearchResults([]); // Limpiar resultados de búsqueda al seleccionar
+    setSearchTerm(result.policy.vehiclePlate || result.customer.cc);
+    setSelectedServiceType(''); // Reset service selection when picking a new vehicle
+  };
+
+  const handleAddFromSearch = () => {
+    if (!selectedResult || !selectedServiceType) return;
+
+    // Auto-fill forms
+    const baseInfo = {
+      documentType: 'Cédula de Ciudadanía',
+      cc: selectedResult.customer.cc,
+      name: selectedResult.customer.name,
+      phone: selectedResult.customer.phone,
+      email: selectedResult.customer.email,
+    };
+
+    // Verificar si hay un tomador diferente en la póliza
+    if (selectedResult.policy.policyHolderDocument && selectedResult.policy.policyHolderDocument !== selectedResult.customer.cc) {
+      // Tomador diferente al asegurado
+      setTomadorInfo({
+        documentType: selectedResult.policy.policyHolderDocumentType || 'Cédula de Ciudadanía',
+        cc: selectedResult.policy.policyHolderDocument,
+        name: selectedResult.policy.policyHolderName || '',
+        phone: '',
+        email: '',
+      });
+      setAseguradoInfo({
+        ...baseInfo,
+        personType: 'Natural',
+        landline: ''
+      });
+    } else {
+      // Tomador y asegurado son la misma persona
+      setTomadorInfo(baseInfo);
+      setAseguradoInfo({
+        ...baseInfo,
+        personType: 'Natural',
+        landline: ''
+      });
+    }
+    
+    // contactoInfo remains empty as per request
+    setContactType('other'); 
+    
+    setVehicleInfo({
+      plate: selectedResult.policy.vehiclePlate || '',
+      brand: selectedResult.policy.vehicleBrand || '',
+      model: selectedResult.policy.vehicleModel || '',
+      color: selectedResult.policy.vehicleColor || '',
+      line: selectedResult.policy.vehicleLine || '',
+      passengers: selectedResult.policy.vehiclePassengers?.toString() || '',
+      vin: selectedResult.policy.vehicleVin || '',
+      fasecolda: selectedResult.policy.vehicleFasecolda || '',
+      vehicleClass: selectedResult.policy.vehicleClass || '',
+      service: selectedResult.policy.vehicleService || '',
+      usage: selectedResult.policy.vehicleUsage || '',
+      vehicleType: selectedResult.policy.vehicleType || '',
+      armorType: selectedResult.policy.vehicleArmor || '',
+      assistanceType: selectedResult.policy.assistanceType || '',
+      clv: selectedResult.customer.clv || ''
+    });
+    
+    setPolicyDetails({
+      productCode: selectedResult.policy.productCode || '',
+      productName: selectedResult.policy.productName || selectedResult.policy.type || '',
+      branchName: selectedResult.policy.branchName || '',
+      policyNumber: selectedResult.policy.number,
+      sequenceNumber: selectedResult.policy.sequenceNumber || '',
+      height: selectedResult.policy.height || '',
+      startDate: selectedResult.policy.startDate || '',
+      endDate: selectedResult.policy.endDate || '',
+      insuredValue: selectedResult.policy.insuredValue || '',
+      status: selectedResult.policy.status,
+      agentKey: selectedResult.policy.agentKey || ''
+    });
+
+    setActivePolicy(selectedResult.policy);
+
+    setIsCaseAdded(true);
+
+    // Update services: if the first service is empty/default, replace it, otherwise add new
+    const newService: ServiceFormState = {
+      id: Date.now(),
+      authNumber: '',
+      serviceType: selectedServiceType as ServiceType,
+      metadata: {}
+    };
+
+    if (services.length === 1 && services[0].authNumber === '' && Object.keys(services[0].metadata).length === 0) {
+      setServices([newService]);
+    } else {
+      setServices([...services, newService]);
+    }
+
+    // Clear search selection to show it was added
+    setSelectedResult(null);
+    setSearchTerm('');
+  };
+
+  const getAvailableServices = (policy: Policy): ServiceType[] => {
+    // If the policy explicitly defines enabled services, use those
+    if (policy.enabledServices && policy.enabledServices.length > 0) {
+      return policy.enabledServices;
+    }
+
+    // Fallback logic if no specific services are defined
+    const allServices: ServiceType[] = [
+      'Conductor elegido', 'Conductor Familiar', 'Trasporte para viajes', 
+      'Trasporte de producto', 'Transporte ocupantes al destino/domicilio', 'translado documentos y mercancía',
+      'Abogado: Asistencia presencial', 'Abogado: Asistencia telefónica', 'Cerrajería autos', 
+      'Carro taller por barada', 'Carro taller instalación de batería', 'Móvil presencial (CESVI)',
+      'Deposito/custodia', 'Grúa salida custodia', 'Grua accidente', 'Gra accedente pesados', 
+      'Grua varada', 'Grua varada pesados', 'moto grua', 'Rescate'
+    ];
+
+    if (policy.assistanceType === 'Full') return allServices;
+    
+    return [
+      'Grua varada', 
+      'Cerrajería autos', 
+      'Carro taller por barada', 
+      'Abogado: Asistencia telefónica',
+      'Conductor elegido'
+    ];
+  };
+
+  const getRemainingQuota = (policy: Policy, service: ServiceType): number | null => {
+    const limits: Partial<Record<ServiceType, number>> = {
+      'Conductor elegido': 4,
+      'Conductor Familiar': 2,
+      'translado documentos y mercancía': 2
+    };
+
+    if (!(service in limits)) return null;
+    
+    const limit = limits[service] || 0;
+    const used = policy.serviceUsage?.[service] || 0;
+    return Math.max(0, limit - used);
+  };
+
+  // Función para calcular el progreso de vigencia de la póliza
+  const getValidityProgress = (validityDate: string): { percentage: number; daysRemaining: number; isExpiringSoon: boolean; isExpired: boolean } => {
+    // Parsear fecha en formato DD/MM/YYYY
+    const [day, month, year] = validityDate.split('/').map(Number);
+    const endDate = new Date(year, month - 1, day);
+    const today = new Date();
+    
+    // Calcular días restantes
+    const diffTime = endDate.getTime() - today.getTime();
+    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Asumir que la póliza dura 1 año (365 días)
+    const totalDays = 365;
+    const daysPassed = totalDays - daysRemaining;
+    const percentage = Math.max(0, Math.min(100, (daysPassed / totalDays) * 100));
+    
+    const isExpired = daysRemaining < 0;
+    const isExpiringSoon = daysRemaining > 0 && daysRemaining <= 30; // Menos de 30 días
+    
+    return { percentage, daysRemaining, isExpiringSoon, isExpired };
+  };
+
+  const renderAttributeInput = (label: string, placeholder: string, value: string, onChange: (val: string) => void, type = "text") => (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{label}</label>
+      <input 
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:font-normal placeholder:text-gray-300 shadow-sm"
+        placeholder={placeholder}
+      />
+    </div>
+  );
+
+  const renderToggleInput = (label: string, value: boolean, onChange: (val: boolean) => void) => (
+    <div className="space-y-2">
+      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{label}</label>
+      <div className="flex bg-gray-100 p-1 rounded-xl w-full">
+        <button 
+          onClick={() => onChange(true)}
+          className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${value === true ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+        >
+          Sí
+        </button>
+        <button 
+          onClick={() => onChange(false)}
+          className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${value === false ? 'bg-white text-red-700 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+        >
+          No
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#F9FAFB] animate-in slide-in-from-right duration-700 pb-32">
+      {/* Header Superior - Sin referencias a SIAB */}
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            <button onClick={onCancel} className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-emerald-50 text-gray-400 hover:text-emerald-700 rounded-xl transition-all active:scale-90 border border-transparent hover:border-emerald-200">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <div>
+              <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-0.5">
+                <span>CONTROL OPERATIVO</span>
+                <span className="text-gray-200">/</span>
+                <span className="text-emerald-700">REGISTRO DE CASO</span>
+              </div>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight">Apertura de Asistencia</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <button onClick={onCancel} className="px-6 py-2.5 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest">
+              Descartar
+            </button>
+            <button 
+              onClick={() => onSave({})}
+              className="px-8 py-3 bg-emerald-800 text-white text-xs font-black rounded-xl hover:bg-emerald-900 transition-all shadow-lg shadow-emerald-900/20 active:scale-95 uppercase tracking-widest"
+            >
+              Registrar Caso
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-8 py-10">
+        {/* RESUMEN SUPERIOR - ESPACIO RESERVADO */}
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Número de Caso */}
+          <div className={`px-6 py-4 rounded-2xl border-2 transition-all duration-500 flex items-center gap-4 ${isCaseAdded ? 'bg-emerald-950 border-emerald-900 shadow-lg shadow-emerald-900/20' : 'bg-white border-gray-100 opacity-40'}`}>
+            <div className={`p-2 rounded-lg ${isCaseAdded ? 'bg-emerald-800 text-emerald-400' : 'bg-gray-100 text-gray-300'}`}>
+              <Icons.FileText className="w-4 h-4" />
+            </div>
+            <div>
+              <p className={`text-[8px] font-black uppercase tracking-[0.2em] mb-0.5 ${isCaseAdded ? 'text-emerald-500' : 'text-gray-400'}`}>Nº de Caso</p>
+              <p className={`text-sm font-black tracking-tight ${isCaseAdded ? 'text-white' : 'text-gray-300'}`}>
+                {isCaseAdded ? generatedCaseNumber : '--- ---'}
+              </p>
+            </div>
+          </div>
+
+          {/* Segmento CLV */}
+          <div className={`px-6 py-4 rounded-2xl border-2 transition-all duration-500 flex items-center gap-4 ${
+            !isCaseAdded ? 'bg-white border-gray-100 opacity-40' :
+            vehicleInfo.clv === 'Diamante' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' :
+            vehicleInfo.clv === 'Platino' ? 'bg-slate-50 border-slate-200 text-slate-700' :
+            vehicleInfo.clv === 'Oro' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+            'bg-orange-50 border-orange-200 text-orange-700'
+          }`}>
+            <div className={`p-2 rounded-lg ${
+              !isCaseAdded ? 'bg-gray-100 text-gray-300' :
+              vehicleInfo.clv === 'Diamante' ? 'bg-indigo-100 text-indigo-500' :
+              vehicleInfo.clv === 'Platino' ? 'bg-slate-100 text-slate-500' :
+              vehicleInfo.clv === 'Oro' ? 'bg-amber-100 text-amber-500' :
+              'bg-orange-100 text-orange-500'
+            }`}>
+              <Icons.Star className="w-4 h-4 fill-current" />
+            </div>
+            <div>
+              <p className={`text-[8px] font-black uppercase tracking-[0.2em] mb-0.5 ${isCaseAdded ? 'opacity-60' : 'text-gray-400'}`}>Segmento CLV</p>
+              <p className={`text-sm font-black uppercase tracking-tight ${isCaseAdded ? '' : 'text-gray-300'}`}>
+                {isCaseAdded ? vehicleInfo.clv : '---'}
+              </p>
+            </div>
+          </div>
+
+          {/* Estado Póliza */}
+          <div className={`px-6 py-4 rounded-2xl border-2 transition-all duration-500 flex items-center gap-4 ${isCaseAdded ? 'bg-white border-gray-200 shadow-sm' : 'bg-white border-gray-100 opacity-40'}`}>
+            <div className={`w-2.5 h-2.5 rounded-full ${!isCaseAdded ? 'bg-gray-200' : policyDetails.status === 'Vigente' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
+            <div>
+              <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mb-0.5">Estado Póliza</p>
+              <p className={`text-sm font-black tracking-tight ${isCaseAdded ? 'text-gray-800' : 'text-gray-300'}`}>
+                {isCaseAdded ? policyDetails.status : '---'}
+              </p>
+            </div>
+          </div>
+
+          {/* Alerta de Alto Riesgo */}
+          <div className={`px-6 py-4 rounded-2xl border-2 transition-all duration-500 flex items-center gap-4 ${
+            riskAccepted?.accepted 
+              ? 'bg-red-50 border-red-200 shadow-lg shadow-red-500/20 animate-in zoom-in-95 duration-300' 
+              : 'bg-white border-gray-100 opacity-40'
+          }`}>
+            <div className={`p-2 rounded-lg ${
+              riskAccepted?.accepted 
+                ? 'bg-red-100 text-red-500' 
+                : 'bg-gray-100 text-gray-300'
+            }`}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <div>
+              <p className={`text-[8px] font-black uppercase tracking-[0.2em] mb-0.5 ${
+                riskAccepted?.accepted ? 'text-red-600' : 'text-gray-400'
+              }`}>
+                {riskAccepted?.accepted ? 'Alto Riesgo' : 'Validación'}
+              </p>
+              <p className={`text-sm font-black tracking-tight ${
+                riskAccepted?.accepted ? 'text-red-800' : 'text-gray-300'
+              }`}>
+                {riskAccepted?.accepted ? 'Cliente en lista negra' : '---'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* BUSCADOR INTEGRADO */}
+        <div className="mb-10 bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-xl shadow-gray-200/30">
+          <div className="flex flex-col md:flex-row gap-6 items-end">
+            <div className="flex-1 space-y-2">
+              <label className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em] ml-1">Buscador de Cliente o Vehículo</label>
+              <div className="relative">
+                <input 
+                  type="text" 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="Ingrese Cédula, NIT o Placa..."
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl text-sm font-black text-gray-800 outline-none transition-all shadow-inner"
+                />
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+              </div>
+              <p className="text-[9px] font-bold text-gray-400 ml-1">
+                💡 <span className="text-blue-600 font-black">HOGAR</span>: Cédula/NIT • <span className="text-purple-600 font-black">AUTOS</span>: Cédula/Placa
+              </p>
+            </div>
+            <button 
+              onClick={handleSearch}
+              className="px-10 py-4 bg-emerald-800 text-white text-xs font-black rounded-2xl hover:bg-emerald-900 transition-all shadow-lg shadow-emerald-900/20 active:scale-95 uppercase tracking-widest"
+            >
+              Consultar
+            </button>
+          </div>
+
+          {/* Resultados de búsqueda (Pólizas - Hogar y Autos) */}
+          {searchResults.length >= 1 && (
+            <div className="mt-6 space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+              {/* Contador de resultados por tipo */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-black text-gray-700 uppercase tracking-tight">
+                  Pólizas Encontradas ({searchResults.length})
+                </h3>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span className="text-xs font-black text-blue-700">
+                      {searchResults.filter(r => r.policy.policyType === 'HOGAR').length} Hogar
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 rounded-lg border border-purple-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600">
+                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+                      <circle cx="7" cy="17" r="2"></circle>
+                      <path d="M9 17h6"></path>
+                      <circle cx="17" cy="17" r="2"></circle>
+                    </svg>
+                    <span className="text-xs font-black text-purple-700">
+                      {searchResults.filter(r => r.policy.policyType === 'AUTOS').length} Autos
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid de cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {searchResults.map((result, idx) => {
+                const validityInfo = getValidityProgress(result.policy.validity);
+                const isHogar = result.policy.policyType === 'HOGAR';
+                
+                return (
+                  <button 
+                    key={idx}
+                    onClick={() => selectResult(result)}
+                    className="bg-white p-4 rounded-2xl border-2 border-gray-100 hover:border-emerald-500 hover:shadow-lg text-left transition-all group relative overflow-hidden"
+                  >
+                    {/* Header: Estado y Renovación */}
+                    <div className="flex items-start justify-between mb-3">
+                      {/* Estado */}
+                      <div className="flex items-center gap-1">
+                        {validityInfo.isExpired ? (
+                          <>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="15" y1="9" x2="9" y2="15"></line>
+                              <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                            <span className="text-[8px] font-black text-red-700 uppercase tracking-wider">
+                              Vencida
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500">
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            <span className="text-[8px] font-black text-emerald-700 uppercase tracking-wider">
+                              Vigente
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      
+                      {/* Renovación */}
+                      <div className="px-2 py-0.5 bg-gray-100 rounded-md border border-gray-200">
+                        <span className="text-[8px] font-black text-gray-600 uppercase tracking-wider">
+                          R{result.policy.renovationNumber || 1}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Tipo de Póliza + Producto */}
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        {isHogar ? (
+                          <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600">
+                              <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+                              <circle cx="7" cy="17" r="2"></circle>
+                              <path d="M9 17h6"></path>
+                              <circle cx="17" cy="17" r="2"></circle>
+                            </svg>
+                          </div>
+                        )}
+                        <span className={`text-[8px] font-black uppercase tracking-wider ${isHogar ? 'text-blue-600' : 'text-purple-600'}`}>
+                          {isHogar ? 'HOGAR' : 'AUTOS'}
+                        </span>
+                      </div>
+                      <div className="mb-0.5">
+                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider">Producto</span>
+                      </div>
+                      <h3 className="text-xs font-black text-gray-900 uppercase leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2">
+                        {result.policy.type}
+                      </h3>
+                    </div>
+
+                    {/* Nombre del asegurado */}
+                    <div className="mb-3">
+                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Asegurado</span>
+                      <p className="text-xs font-bold text-gray-700 line-clamp-1">{result.customer.name}</p>
+                    </div>
+
+                    {/* Información Contextual - Dinámica según tipo */}
+                    <div className="space-y-2 mb-3">
+                      {/* Placa o Dirección */}
+                      <div>
+                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
+                          {isHogar ? 'Dirección' : 'Placa'}
+                        </span>
+                        {isHogar ? (
+                          <p className="text-[10px] font-bold text-gray-700 leading-tight line-clamp-2">
+                            {result.policy.propertyAddress}
+                          </p>
+                        ) : (
+                          <span className="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md font-mono text-xs font-black border border-yellow-200">
+                            {result.policy.vehiclePlate}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Tipo de Cobertura */}
+                      <div>
+                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
+                          Cobertura
+                        </span>
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${
+                          isHogar 
+                            ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+                            : 'bg-purple-100 text-purple-700 border border-purple-200'
+                        }`}>
+                          {isHogar ? result.policy.coverageType : result.policy.coverageTypeAuto}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Footer: Vencimiento y Barra de Progreso */}
+                    <div className="pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider">Vence</span>
+                        <span className={`text-[9px] font-black ${validityInfo.isExpired ? 'text-red-600' : validityInfo.isExpiringSoon ? 'text-amber-600' : 'text-gray-700'}`}>
+                          {result.policy.validity}
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all ${
+                            validityInfo.isExpired ? 'bg-red-500' : 
+                            validityInfo.isExpiringSoon ? 'bg-amber-500' : 
+                            'bg-emerald-500'
+                          }`}
+                          style={{ width: `${validityInfo.isExpired ? 100 : validityInfo.percentage}%` }}
+                        ></div>
+                      </div>
+                      {!validityInfo.isExpired && (
+                        <p className={`text-[9px] font-bold mt-1 ${validityInfo.isExpiringSoon ? 'text-amber-600' : 'text-gray-400'}`}>
+                          {validityInfo.daysRemaining} días restantes
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Indicador de hover */}
+                    <div className="mt-4 pt-4 border-t border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-2">
+                        Seleccionar póliza
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+              </div>
+            </div>
+          )}
+
+          {/* Información del Vehículo Seleccionado */}
+          {selectedResult && (
+            <div className="mt-8 pt-8 border-t border-gray-100 animate-in fade-in duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Placa</p>
+                  <p className="text-lg font-black text-gray-900 font-mono">{selectedResult.policy.vehiclePlate}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Marca / Modelo</p>
+                  <p className="text-sm font-black text-gray-900 uppercase">{selectedResult.policy.vehicleBrand} {selectedResult.policy.vehicleModel}</p>
+                </div>
+                <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                  <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">Tipo de Asistencia</p>
+                  <p className="text-sm font-black text-emerald-800 uppercase tracking-widest">{selectedResult.policy.assistanceType}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Banner de Validación de Riesgo Aceptado */}
+        {riskAccepted?.accepted && (
+          <div className="mb-8 bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-2xl p-5 shadow-lg animate-in slide-in-from-top-4 duration-500">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-sm font-black text-red-800 uppercase tracking-tight">⚠️ CASO CON VALIDACIÓN DE RIESGO</h3>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                    riskAccepted.customer.riskLevel === 'Crítico' ? 'bg-red-600 text-white' :
+                    riskAccepted.customer.riskLevel === 'Alto' ? 'bg-orange-600 text-white' :
+                    'bg-amber-600 text-white'
+                  }`}>
+                    RIESGO {riskAccepted.customer.riskLevel.toUpperCase()}
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-red-700 mb-0">
+                  Se continuó el proceso a pesar de la alerta de alto riesgo. {riskAccepted.customer.reason}
+                </p>
+              </div>
+              <div className="flex items-center gap-6 text-center">
+                <div>
+                  <p className="text-[9px] font-black text-red-500 uppercase tracking-widest mb-0.5">Incidentes Previos</p>
+                  <p className="text-lg font-black text-red-800">{riskAccepted.customer.incidents} casos</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-red-500 uppercase tracking-widest mb-0.5">Último Incidente</p>
+                  <p className="text-xs font-black text-red-800">{riskAccepted.customer.lastIncident}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-red-500 uppercase tracking-widest mb-0.5">Validado el</p>
+                  <p className="text-xs font-black text-red-800">{riskAccepted.timestamp}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tarjetas coloridas de visualización en la parte superior */}
+        {(isCaseAdded || selectedResult) && (
+          <div className="mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Tarjeta 1: VEHÍCULO - Azul Vibrante */}
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl p-6 shadow-2xl shadow-blue-500/30 relative overflow-hidden group hover:shadow-blue-500/40 transition-all duration-300">
+              <div className="absolute top-0 right-0 opacity-10 -mr-8 -mt-8 transition-transform group-hover:scale-110 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+              </div>
+              <h3 className="text-xs font-black text-white uppercase tracking-[0.25em] mb-4 flex items-center gap-2 relative z-10">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl text-white shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                </div>
+                Vehículo
+              </h3>
+              <div className="grid grid-cols-2 gap-3 relative z-10">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Placa</span>
+                  <span className="text-sm font-black text-white leading-tight">{vehicleInfo.plate || selectedResult?.policy.vehiclePlate || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Marca</span>
+                  <span className="text-sm font-black text-white leading-tight">{vehicleInfo.brand || selectedResult?.policy.vehicleBrand || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Modelo</span>
+                  <span className="text-sm font-black text-white leading-tight">{vehicleInfo.model || selectedResult?.policy.vehicleModel || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Color</span>
+                  <span className="text-sm font-black text-white leading-tight">{vehicleInfo.color || selectedResult?.policy.vehicleColor || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Línea</span>
+                  <span className="text-sm font-black text-white leading-tight">{vehicleInfo.line || selectedResult?.policy.vehicleLine || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Pasajeros</span>
+                  <span className="text-sm font-black text-white leading-tight">{vehicleInfo.passengers || selectedResult?.policy.vehiclePassengers || '---'}</span>
+                </div>
+                <div className="flex flex-col col-span-2">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">VIN</span>
+                  <span className="text-xs font-black text-white leading-tight font-mono">{vehicleInfo.vin || selectedResult?.policy.vehicleVin || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Fasecolda</span>
+                  <span className="text-xs font-black text-white leading-tight">{vehicleInfo.fasecolda || selectedResult?.policy.vehicleFasecolda || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Clase</span>
+                  <span className="text-xs font-black text-white leading-tight">{vehicleInfo.vehicleClass || selectedResult?.policy.vehicleClass || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Servicio</span>
+                  <span className="text-xs font-black text-white leading-tight">{vehicleInfo.service || selectedResult?.policy.vehicleService || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Uso</span>
+                  <span className="text-xs font-black text-white leading-tight">{vehicleInfo.usage || selectedResult?.policy.vehicleUsage || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Tipo</span>
+                  <span className="text-xs font-black text-white leading-tight">{vehicleInfo.vehicleType || selectedResult?.policy.vehicleType || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-blue-100 uppercase tracking-[0.15em] mb-1">Blindaje</span>
+                  <span className="text-xs font-black text-white leading-tight">{vehicleInfo.armorType || selectedResult?.policy.vehicleArmor || 'No'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tarjeta 2: ASEGURADO - Amarillo Vibrante */}
+            <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl p-6 shadow-2xl shadow-yellow-500/30 relative overflow-hidden group hover:shadow-yellow-500/40 transition-all duration-300">
+              <div className="absolute top-0 right-0 opacity-10 -mr-8 -mt-8 transition-transform group-hover:scale-110 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+              </div>
+              <h3 className="text-xs font-black text-white uppercase tracking-[0.25em] mb-4 flex items-center gap-2 relative z-10">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl text-white shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                </div>
+                Asegurado
+              </h3>
+              <div className="space-y-3 relative z-10">
+                {/* Verificar si Tomador = Asegurado */}
+                {((tomadorInfo.cc === aseguradoInfo.cc && tomadorInfo.cc) || (selectedResult && !isCaseAdded)) ? (
+                  <>
+                    {/* Mismo Tomador y Asegurado */}
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Nombre Completo</span>
+                      <span className="text-sm font-black text-white leading-tight">{aseguradoInfo.name || selectedResult?.customer.name || '---'}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Tipo Doc</span>
+                        <span className="text-xs font-bold text-white leading-tight">{aseguradoInfo.documentType || (selectedResult ? 'Cédula de Ciudadanía' : '---')}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Nº Documento</span>
+                        <span className="text-xs font-bold text-white leading-tight">{aseguradoInfo.cc || selectedResult?.customer.cc || '---'}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Teléfono</span>
+                      <span className="text-xs font-bold text-white leading-tight">{aseguradoInfo.phone || selectedResult?.customer.phone || '---'}</span>
+                    </div>
+                    <div className="pt-2 border-t border-white/20">
+                      <span className="inline-flex px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-lg text-[9px] font-black text-white uppercase tracking-widest">
+                        ✓ Tomador y Asegurado: Misma Persona
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Tomador y Asegurado diferentes */}
+                    {/* Datos del Tomador */}
+                    <div className="pb-2 border-b border-white/20">
+                      <span className="text-[8px] font-black text-white/60 uppercase tracking-widest mb-2 block">Tomador</span>
+                      <div className="flex flex-col mb-2">
+                        <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Nombre</span>
+                        <span className="text-sm font-black text-white leading-tight">{tomadorInfo.name || '---'}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Tipo Doc</span>
+                          <span className="text-xs font-bold text-white leading-tight">{tomadorInfo.documentType || '---'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Nº Doc</span>
+                          <span className="text-xs font-bold text-white leading-tight">{tomadorInfo.cc || '---'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Datos del Asegurado */}
+                    <div className="pt-2">
+                      <span className="text-[8px] font-black text-white/60 uppercase tracking-widest mb-2 block">Asegurado</span>
+                      <div className="flex flex-col mb-2">
+                        <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Nombre</span>
+                        <span className="text-sm font-black text-white leading-tight">{aseguradoInfo.name || '---'}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Tipo Doc</span>
+                          <span className="text-xs font-bold text-white leading-tight">{aseguradoInfo.documentType || '---'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-bold text-yellow-100 uppercase tracking-[0.15em] mb-1">Nº Doc</span>
+                          <span className="text-xs font-bold text-white leading-tight">{aseguradoInfo.cc || '---'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Tarjeta 3: DATOS DE LA PÓLIZA - Verde Esmeralda */}
+            <div className="bg-gradient-to-br from-emerald-500 via-green-600 to-emerald-700 rounded-3xl p-6 shadow-2xl shadow-emerald-500/40 relative overflow-hidden group hover:shadow-emerald-500/50 transition-all duration-300">
+              <div className="absolute top-0 right-0 opacity-10 -mr-8 -mt-8 transition-transform group-hover:scale-110 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
+              <h3 className="text-xs font-black text-white uppercase tracking-[0.25em] mb-4 flex items-center gap-2 relative z-10">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl text-white shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                Datos de la Póliza
+              </h3>
+              <div className="grid grid-cols-2 gap-3 relative z-10">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Código Producto</span>
+                  <span className="text-sm font-black text-white">{policyDetails.productCode || selectedResult?.policy.productCode || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Ramo Emisión</span>
+                  <span className="text-sm font-black text-white">{policyDetails.branchName || selectedResult?.policy.branchName || '---'}</span>
+                </div>
+                <div className="flex flex-col col-span-2">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Nombre Producto</span>
+                  <span className="text-xs font-black text-white leading-tight">{policyDetails.productName || selectedResult?.policy.productName || selectedResult?.policy.type || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Número Póliza</span>
+                  <span className="text-sm font-black text-white font-mono">{policyDetails.policyNumber || selectedResult?.policy.number || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Altura</span>
+                  <span className="text-sm font-black text-white">{policyDetails.height || selectedResult?.policy.height || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Estado</span>
+                  <span className="text-sm font-black text-white">{policyDetails.status || selectedResult?.policy.status || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Secuencia</span>
+                  <span className="text-sm font-black text-white">{policyDetails.sequenceNumber || selectedResult?.policy.sequenceNumber || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Inicio Vigencia</span>
+                  <span className="text-xs font-black text-white">{policyDetails.startDate || selectedResult?.policy.startDate || '---'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Fin Vigencia</span>
+                  <span className="text-xs font-black text-white">{policyDetails.endDate || selectedResult?.policy.endDate || '---'}</span>
+                </div>
+                <div className="flex flex-col col-span-2">
+                  <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Valor Asegurado</span>
+                  <span className="text-sm font-black text-white">{policyDetails.insuredValue || selectedResult?.policy.insuredValue || '---'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tarjeta 4: EVENTO - Púrpura Vibrante */}
+            <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3xl p-6 shadow-2xl shadow-purple-500/30 relative overflow-hidden group hover:shadow-purple-500/40 transition-all duration-300">
+              <div className="absolute top-0 right-0 opacity-10 -mr-8 -mt-8 transition-transform group-hover:scale-110 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              </div>
+              <h3 className="text-xs font-black text-white uppercase tracking-[0.25em] mb-4 flex items-center gap-2 relative z-10">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl text-white shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </div>
+                Evento
+              </h3>
+              <div className="space-y-3 relative z-10">
+                {services[0]?.metadata?.departamento || services[0]?.metadata?.ciudad_origen || services[0]?.metadata?.direccion_recogida || services[0]?.metadata?.direccion ? (
+                  <>
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-purple-100 uppercase tracking-[0.15em] mb-1">Departamento</span>
+                      <span className="text-sm font-black text-white leading-tight">{services[0]?.metadata?.departamento || '---'}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-purple-100 uppercase tracking-[0.15em] mb-1">Ciudad</span>
+                      <span className="text-sm font-black text-white leading-tight">{services[0]?.metadata?.ciudad_origen || '---'}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-purple-100 uppercase tracking-[0.15em] mb-1">Dirección Reportada</span>
+                      <span className="text-xs font-bold text-white leading-tight">{services[0]?.metadata?.direccion_recogida || services[0]?.metadata?.direccion || '---'}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-6 text-center">
+                    <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/60">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                    </div>
+                    <p className="text-xs font-bold text-white/80 leading-relaxed">
+                      Los datos del evento se completarán<br/>al diligenciar los servicios
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+          {/* SERVICIOS */}
+          <div className="lg:col-span-12 space-y-6">
+            <div className="flex items-center justify-between mb-4 px-2">
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Servicios a Prestar</h2>
+              <button 
+                onClick={addService}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-emerald-200 text-emerald-700 text-xs font-black rounded-xl hover:bg-emerald-50 transition-all shadow-sm active:scale-95 uppercase tracking-widest"
+              >
+                <Icons.Plus />
+                Añadir Servicio
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {services.map((service, index) => (
+                <div key={service.id} className="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-300">
+                  <div className="px-10 py-6 border-b border-gray-100 bg-gray-50/30 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shadow-lg shadow-emerald-600/20">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-gray-800 uppercase tracking-widest">Detalle de Asistencia</h4>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Requisito: Autorización Válida</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => removeService(service.id)}
+                      disabled={services.length === 1}
+                      className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all disabled:opacity-0"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                  </div>
+
+                  <div className="p-10 space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest ml-1">Nº Autorización</label>
+                        <input 
+                          type="number" 
+                          className="w-full px-5 py-3.5 bg-gray-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl text-sm font-black text-gray-800 outline-none transition-all placeholder:font-normal" 
+                          placeholder="Autorización #"
+                          value={service.authNumber}
+                          onChange={(e) => handleServiceChange(service.id, 'authNumber', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest ml-1">Tipo de Servicio</label>
+                        <select 
+                          className="w-full px-5 py-3.5 bg-gray-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl text-sm font-black text-gray-800 outline-none cursor-pointer appearance-none"
+                          value={service.serviceType}
+                          onChange={(e) => handleServiceChange(service.id, 'serviceType', e.target.value as ServiceType)}
+                        >
+                          {activePolicy || selectedResult ? (
+                            <>
+                              <option value="">-- Seleccione un servicio --</option>
+                              {getAvailableServices(activePolicy || selectedResult!.policy).map(type => {
+                                const quota = getRemainingQuota(activePolicy || selectedResult!.policy, type);
+                                return (
+                                  <option key={type} value={type}>
+                                    {type} {quota !== null ? `(Disponibles: ${quota})` : ''}
+                                  </option>
+                                );
+                              })}
+                            </>
+                          ) : (
+                            <option value={service.serviceType}>{service.serviceType}</option>
+                          )}
+                        </select>
+                        {(activePolicy || selectedResult) && getRemainingQuota(activePolicy || selectedResult!.policy, service.serviceType) === 0 && (
+                          <p className="text-[9px] font-bold text-red-600 mt-2 ml-1 uppercase tracking-widest animate-pulse">
+                            * Cupo mensual agotado para este servicio
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-8">
+                      {/* GRUPO TRANSPORTE */}
+                      {isTransportGroup(service.serviceType) && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                           {renderAttributeInput("Departamento Origen", "Ej. Antioquia", service.metadata.departamento || '', (v) => handleMetadataChange(service.id, 'departamento', v))}
+                           {renderAttributeInput("Ciudad Origen", "Medellín", service.metadata.ciudad_origen || '', (v) => handleMetadataChange(service.id, 'ciudad_origen', v))}
+                           {renderAttributeInput("Dirección Recogida", "Calle 10 # 43 - 50", service.metadata.direccion_recogida || '', (v) => handleMetadataChange(service.id, 'direccion_recogida', v))}
+                           {renderAttributeInput("Fecha y Hora", "", service.metadata.fecha_hora || '', (v) => handleMetadataChange(service.id, 'fecha_hora', v), "datetime-local")}
+                           <div className="col-span-full border-b border-gray-100 my-2"></div>
+                           {renderAttributeInput("Depto Destino", "Ej. Bogotá D.C.", service.metadata.departamento_destino || '', (v) => handleMetadataChange(service.id, 'departamento_destino', v))}
+                           {renderAttributeInput("Ciudad Destino", "Bogotá", service.metadata.ciudad_destino || '', (v) => handleMetadataChange(service.id, 'ciudad_destino', v))}
+                           {renderAttributeInput("Dirección Destino", "Carrera 7 # 100-20", service.metadata.direccion_destino || '', (v) => handleMetadataChange(service.id, 'direccion_destino', v))}
+                           <div className="col-span-full">
+                              {renderAttributeInput("Observaciones Adicionales", "Indicaciones especiales...", service.metadata.observaciones || '', (v) => handleMetadataChange(service.id, 'observaciones', v))}
+                           </div>
+                        </div>
+                      )}
+
+                      {/* GRUPO GRÚAS (NUEVO) */}
+                      {isTowingGroup(service.serviceType) && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="col-span-full mb-2">
+                              <h5 className="text-[10px] font-black text-indigo-700 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span> Ubicación y Estado
+                              </h5>
+                            </div>
+                            {renderAttributeInput("Tipo de Vehículo", "Sedán, SUV, Pesado...", service.metadata.tipo_vehiculo || '', (v) => handleMetadataChange(service.id, 'tipo_vehiculo', v))}
+                            {renderAttributeInput("Departamento", "Ej. Cundinamarca", service.metadata.departamento || '', (v) => handleMetadataChange(service.id, 'departamento', v))}
+                            {renderAttributeInput("Ciudad Origen", "Ej. Chía", service.metadata.ciudad_origen || '', (v) => handleMetadataChange(service.id, 'ciudad_origen', v))}
+                            {renderAttributeInput("Dirección Recogida", "Calle... Carrera...", service.metadata.direccion_recogida || '', (v) => handleMetadataChange(service.id, 'direccion_recogida', v))}
+                            
+                            {renderToggleInput("Servicio Programado", !!service.metadata.servicio_programado, (v) => handleMetadataChange(service.id, 'servicio_programado', v))}
+                            {renderToggleInput("¿En vía?", !!service.metadata.en_via, (v) => handleMetadataChange(service.id, 'en_via', v))}
+                            {renderToggleInput("Fácil Acceso", !!service.metadata.facil_acceso, (v) => handleMetadataChange(service.id, 'facil_acceso', v))}
+                            {renderToggleInput("Bloqueo de Caja/Llantas", !!service.metadata.bloqueo_caja_llantas, (v) => handleMetadataChange(service.id, 'bloqueo_caja_llantas', v))}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
+                            <div className="col-span-full mb-2">
+                              <h5 className="text-[10px] font-black text-blue-700 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> Especificaciones y Daño
+                              </h5>
+                            </div>
+                            {renderAttributeInput("Dimensiones", "Largo x Ancho", service.metadata.dimensiones || '', (v) => handleMetadataChange(service.id, 'dimensiones', v))}
+                            {renderAttributeInput("Carga", "Tipo de carga", service.metadata.carga || '', (v) => handleMetadataChange(service.id, 'carga', v))}
+                            {renderAttributeInput("Capacidad de Carga", "Peso en Ton.", service.metadata.capacidad_carga || '', (v) => handleMetadataChange(service.id, 'capacidad_carga', v))}
+                            <div className="md:col-span-3 lg:col-span-1">
+                               {renderAttributeInput("Daño que presenta", "Describa la falla...", service.metadata.daño_presentado || '', (v) => handleMetadataChange(service.id, 'daño_presentado', v))}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="col-span-full mb-2">
+                              <h5 className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Destino y Logística
+                              </h5>
+                            </div>
+                            {renderAttributeInput("Depto Destino", "Ej. Bogotá D.C.", service.metadata.departamento_destino || '', (v) => handleMetadataChange(service.id, 'departamento_destino', v))}
+                            {renderAttributeInput("Ciudad Destino", "Localidad/Ciudad", service.metadata.ciudad_destino || '', (v) => handleMetadataChange(service.id, 'ciudad_destino', v))}
+                            {renderAttributeInput("Dirección Destino", "Taller o Residencia", service.metadata.direccion_destino || '', (v) => handleMetadataChange(service.id, 'direccion_destino', v))}
+                            <div className="lg:col-span-1">
+                               {renderToggleInput("¿Requiere Transporte?", !!service.metadata.requiere_transporte, (v) => handleMetadataChange(service.id, 'requiere_transporte', v))}
+                            </div>
+                            <div className="lg:col-span-2">
+                               {renderAttributeInput("Observaciones Adicionales", "Detalle relevante...", service.metadata.observaciones || '', (v) => handleMetadataChange(service.id, 'observaciones', v))}
+                            </div>
+                          </div>
+
+                          <div className="col-span-full">
+                              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Evidencias Visuales</label>
+                              <div className="border-2 border-dashed border-gray-200 rounded-[2rem] p-8 flex flex-col items-center justify-center bg-white hover:bg-indigo-50 hover:border-indigo-200 transition-all cursor-pointer group shadow-sm">
+                                 <div className="w-12 h-12 rounded-2xl bg-indigo-50 shadow-sm flex items-center justify-center text-indigo-300 group-hover:text-indigo-600 group-hover:scale-110 transition-all mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                 </div>
+                                 <p className="text-[10px] font-black text-gray-400 group-hover:text-indigo-800 uppercase tracking-widest">Subir Evidencias Fotográficas</p>
+                              </div>
+                           </div>
+                        </div>
+                      )}
+
+                      {/* GRUPO LEGAL/TECH */}
+                      {isLegalTechGroup(service.serviceType) && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                           {renderAttributeInput("Departamento", "Ej. Antioquia", service.metadata.departamento || '', (v) => handleMetadataChange(service.id, 'departamento', v))}
+                           {renderAttributeInput("Ciudad Origen", "Medellín", service.metadata.ciudad_origen || '', (v) => handleMetadataChange(service.id, 'ciudad_origen', v))}
+                           <div className="col-span-full">
+                              {renderAttributeInput("Dirección Exacta", "Ubicación del evento...", service.metadata.direccion || '', (v) => handleMetadataChange(service.id, 'direccion', v))}
+                           </div>
+                           <div className="col-span-full">
+                              {renderAttributeInput("Observaciones Adicionales", "Detalles...", service.metadata.observaciones || '', (v) => handleMetadataChange(service.id, 'observaciones', v))}
+                           </div>
+                           <div className="col-span-full">
+                              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Imágenes / Evidencias</label>
+                              <div className="border-2 border-dashed border-gray-200 rounded-3xl p-10 flex flex-col items-center justify-center bg-gray-50/50 hover:bg-emerald-50 hover:border-emerald-200 transition-all cursor-pointer group">
+                                 <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-gray-300 group-hover:text-emerald-500 group-hover:scale-110 transition-all mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                 </div>
+                                 <p className="text-xs font-bold text-gray-400 group-hover:text-emerald-700 uppercase tracking-widest">Subir Evidencias</p>
+                              </div>
+                           </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+export default CreateCaseView;
